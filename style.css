@@ -1,0 +1,24 @@
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  background: #f0f0f0;
+  margin: 0;
+  padding: 20px;
+}
+
+h1 {
+  color: #333;
+  margin-bottom: 10px;
+}
+
+#reader {
+  width: 100%;
+  max-width: 400px;
+  margin: auto;
+}
+
+#result {
+  margin-top: 15px;
+  font-size: 18px;
+  color: #007b00;
+}
