@@ -1,6 +1,5 @@
 function onScanSuccess(decodedText, decodedResult) {
   document.getElementById('result').innerText = `✅ Scanned: ${decodedText}`;
-  // Optional: stop after first scan
   html5QrcodeScanner.clear();
 }
 
