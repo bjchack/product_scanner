@@ -2,48 +2,55 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>📦 Product Scanner</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <script src="https://unpkg.com/html5-qrcode"></script>
+  <title>Product Scanner</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
-    body { font-family: Arial, sans-serif; background: #f9f9f9; text-align: center; padding: 20px; }
-    #reader { width: 280px; margin: auto; display: none; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      text-align: center;
+      padding: 20px;
+    }
+    #reader {
+      width: 300px;
+      margin: auto;
+      display: none;
+    }
     input, button {
+      margin: 10px;
       padding: 10px;
       font-size: 16px;
-      margin: 10px 0;
       width: 90%;
       max-width: 300px;
       border-radius: 6px;
       border: 1px solid #ccc;
     }
     button {
-      background-color: #4CAF50;
+      background: #4CAF50;
       color: white;
       border: none;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #45a049;
     }
   </style>
 </head>
 <body>
   <h2>📦 Product Scanner</h2>
+
   <input type="text" id="barcode" placeholder="Scanned Barcode" readonly>
   <button onclick="startScan()">📷 Scan Product</button>
   <div id="reader"></div>
 
   <input type="text" id="productName" placeholder="Product Name">
   <input type="number" id="quantity" placeholder="Quantity">
-  <button onclick="submitForm()">✅ Submit to Google Sheet</button>
+
+  <button onclick="submitData()">✅ Submit to Sheet</button>
 
   <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxqbP8u19KETD5eIuPbBrPj6b_6IBaYFgN9CcTyhRqxITcfMHY2nsEJN4gp5zMX0ZDJ/exec";
+    let scanner;
 
     function startScan() {
       document.getElementById("reader").style.display = "block";
-      const scanner = new Html5Qrcode("reader");
+      scanner = new Html5Qrcode("reader");
       scanner.start(
         { facingMode: "environment" },
         { fps: 10, qrbox: 250 },
@@ -53,38 +60,31 @@
             document.getElementById("reader").style.display = "none";
           });
         },
-        (error) => { console.warn(error); }
+        (error) => {}
       ).catch((err) => {
         alert("Camera error: " + err);
       });
     }
 
-    function submitForm() {
-      const barcode = document.getElementById("barcode").value;
-      const productName = document.getElementById("productName").value;
-      const quantity = document.getElementById("quantity").value;
+    function submitData() {
+      const url = "https://script.google.com/macros/s/AKfycbzQWrPVW8VYoQ7JVaxXi5abt3MHQz_ND0IebpuWAfHax6FSh935iaR5JoTvwvW6ceGS/exec";
+      const data = {
+        barcode: document.getElementById("barcode").value,
+        productName: document.getElementById("productName").value,
+        quantity: document.getElementById("quantity").value
+      };
 
-      if (!barcode || !productName || !quantity) {
-        alert("⚠️ Please fill in all fields.");
-        return;
-      }
-
-      const data = { barcode, productName, quantity };
-
-      fetch(WEB_APP_URL, {
+      fetch(url, {
         method: "POST",
-        body: JSON.stringify(data),
-        headers: {
-          "Content-Type": "application/json"
-        }
+        body: JSON.stringify(data)
       })
       .then(() => {
-        alert("✅ Submitted to Google Sheet!");
+        alert("✅ Data submitted!");
         document.getElementById("barcode").value = "";
         document.getElementById("productName").value = "";
         document.getElementById("quantity").value = "";
       })
-      .catch(err => alert("❌ Error: " + err));
+      .catch(err => alert("❌ Submit failed: " + err));
     }
   </script>
 </body>
