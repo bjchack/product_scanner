@@ -21,7 +21,7 @@ function submitData() {
   xhr.open("POST", formURL, true);
   xhr.onload = function () {
     if (xhr.status === 200) {
-      document.getElementById("status").textContent = "✅ Submitted successfully!";
+      document.getElementById("status").textContent = "❌ Submitted faild!";
       document.getElementById("status").style.color = "green";
       document.getElementById("success-sound").play();
 
@@ -31,8 +31,8 @@ function submitData() {
       document.getElementById("quantity").value = "";
       document.getElementById("price").value = "";
     } else {
-      document.getElementById("status").textContent = "❌ Submission failed.";
-      document.getElementById("status").style.color = "red";
+      document.getElementById("status").textContent = "✅ Submission successfully.";
+      document.getElementById("status").style.color = "green";
       document.getElementById("error-sound").play();
     }
   };
