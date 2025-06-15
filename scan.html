@@ -1,86 +1,47 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8">
-  <title>📦 BJC Product Scanner</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <script src="https://unpkg.com/html5-qrcode"></script>
+  <title>📦 Product Scanner</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f4f4f4;
-      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f9f9f9;
       padding: 20px;
       text-align: center;
     }
-
-    h2 {
-      color: #333;
-      margin-bottom: 15px;
-    }
-
-    #reader {
-      width: 100%;
-      max-width: 400px;
-      margin: 10px auto;
-      display: none;
-      border: 3px solid #4CAF50;
-      border-radius: 12px;
-    }
-
+    h2 { color: #333; }
+    #reader { width: 300px; margin: auto; display: none; }
     input, button {
-      padding: 12px;
+      margin: 10px;
+      padding: 10px;
       font-size: 16px;
-      margin: 8px auto;
-      display: block;
       width: 90%;
-      max-width: 350px;
-      border-radius: 8px;
+      max-width: 300px;
+      border-radius: 6px;
       border: 1px solid #ccc;
-      box-sizing: border-box;
     }
-
-    input[readonly] {
-      background-color: #e9e9e9;
-    }
-
     button {
-      background-color: #4CAF50;
+      background: #4CAF50;
       color: white;
-      font-weight: bold;
       border: none;
-      transition: background 0.3s ease;
+      cursor: pointer;
     }
-
-    button:hover {
-      background-color: #388e3c;
-    }
-
-    footer {
-      margin-top: 30px;
-      font-size: 14px;
-      color: #888;
-    }
-
   </style>
 </head>
 <body>
+  <h2>📦 Product Scanner</h2>
 
-  <h2>📦 BJC Product Scanner</h2>
-
-  <input type="text" id="barcode" placeholder="Scanned Barcode" readonly />
+  <input type="text" id="barcode" placeholder="Scanned Barcode" readonly>
   <button onclick="startScan()">📷 Scan Product</button>
-
   <div id="reader"></div>
 
-  <input type="text" id="productName" placeholder="Product Name" />
-  <input type="number" id="quantity" placeholder="Quantity" />
+  <input type="text" id="productName" placeholder="Product Name">
+  <input type="number" id="quantity" placeholder="Quantity">
 
   <button onclick="submitForm()">✅ Submit to Google Form</button>
-
-  <footer>
-    🔗 Connected to Google Form | Made by BJC
-  </footer>
 
   <script>
     let scanner;
@@ -110,20 +71,20 @@
       const quantity = document.getElementById("quantity").value;
 
       const data = new URLSearchParams();
-      data.append("entry.1590723981", barcode);      // ← BARCODE entry ID
-      data.append("entry.1120019988", productName);  // ← PRODUCT NAME entry ID
-      data.append("entry.346944926", quantity);      // ← QUANTITY entry ID
+      data.append("entry.1590723981", barcode);
+      data.append("entry.1120019988", productName);
+      data.append("entry.346944926", quantity);
 
-      fetch(formURL + "?" + data.toString(), { method: "GET", mode: "no-cors" });
-
-      alert("✅ Data submitted!");
-
-      // Clear fields
-      document.getElementById("barcode").value = "";
-      document.getElementById("productName").value = "";
-      document.getElementById("quantity").value = "";
+      fetch(formURL + "?" + data.toString(), {
+        method: "GET",
+        mode: "no-cors"
+      }).then(() => {
+        alert("✅ Submitted to Google Sheet!");
+        document.getElementById("barcode").value = "";
+        document.getElementById("productName").value = "";
+        document.getElementById("quantity").value = "";
+      });
     }
   </script>
-
 </body>
 </html>
