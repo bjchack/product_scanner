@@ -1,36 +1,3 @@
-// Check login status
-if (window.location.pathname.includes("scan.html")) {
-  if (localStorage.getItem("loggedIn") !== "true") {
-    window.location.href = "index.html";
-  }
-}
-
-const formURL = "https://docs.google.com/forms/d/e/1FAIpQLSc7L0-8TQxpw0EL3BEDufG5YOesOOO1Y1VtYeHWxu3zaIqnwQ/formResponse";
-
-function logout() {
-  localStorage.removeItem("loggedIn");
-  window.location.href = "index.html";
-}
-
-function startScan() {
-  document.getElementById("reader").style.display = "block";
-  const scanner = new Html5Qrcode("reader");
-  scanner.start(
-    { facingMode: "environment" },
-    { fps: 10, qrbox: 250 },
-    (decodedText) => {
-      document.getElementById("barcode").value = decodedText;
-      scanner.stop();
-      document.getElementById("reader").style.display = "none";
-      document.getElementById("success-sound").play();
-    },
-    (error) => {}
-  ).catch((err) => {
-    alert("Camera error: " + err);
-    document.getElementById("error-sound").play();
-  });
-}
-
 function submitData() {
   const barcode = document.getElementById("barcode").value.trim();
   const productName = document.getElementById("productName").value.trim();
@@ -59,10 +26,7 @@ function submitData() {
       document.getElementById("quantity").value = "";
       document.getElementById("price").value = "";
       document.getElementById("success-sound").play();
-    })
-    .catch(() => {
-      document.getElementById("status").textContent = "❌ Submission failed.";
-      document.getElementById("status").style.color = "red";
-      document.getElementById("error-sound").play();
     });
+
+  // REMOVE the .catch block – Google Forms always returns 200
 }
