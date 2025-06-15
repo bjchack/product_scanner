@@ -2,33 +2,29 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Product Scanner</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <title>📦 Product Scanner</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f0f0f0;
-      padding: 20px;
-      text-align: center;
-    }
-    h2 { color: #333; }
-    #reader { width: 300px; margin: auto; display: none; }
+    body { font-family: Arial, sans-serif; background: #f9f9f9; text-align: center; padding: 20px; }
+    #reader { width: 280px; margin: auto; display: none; }
     input, button {
-      margin: 10px auto;
       padding: 10px;
       font-size: 16px;
+      margin: 10px 0;
       width: 90%;
       max-width: 300px;
       border-radius: 6px;
       border: 1px solid #ccc;
-      display: block;
     }
     button {
-      background: #4CAF50;
+      background-color: #4CAF50;
       color: white;
       border: none;
       cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
     }
   </style>
 </head>
@@ -40,17 +36,14 @@
 
   <input type="text" id="productName" placeholder="Product Name">
   <input type="number" id="quantity" placeholder="Quantity">
-
   <button onclick="submitForm()">✅ Submit to Google Sheet</button>
 
   <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyXNWEk7WGWpK_boWC1VSgzcrbhs_5ONWNyd3ZSECWlTJJ6X9CMf5n9yly3QA0JwGFC/exec";
-
-    let scanner;
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxqbP8u19KETD5eIuPbBrPj6b_6IBaYFgN9CcTyhRqxITcfMHY2nsEJN4gp5zMX0ZDJ/exec";
 
     function startScan() {
       document.getElementById("reader").style.display = "block";
-      scanner = new Html5Qrcode("reader");
+      const scanner = new Html5Qrcode("reader");
       scanner.start(
         { facingMode: "environment" },
         { fps: 10, qrbox: 250 },
@@ -60,9 +53,9 @@
             document.getElementById("reader").style.display = "none";
           });
         },
-        (err) => { console.warn(err); }
+        (error) => { console.warn(error); }
       ).catch((err) => {
-        alert("Camera Error: " + err);
+        alert("Camera error: " + err);
       });
     }
 
@@ -72,29 +65,26 @@
       const quantity = document.getElementById("quantity").value;
 
       if (!barcode || !productName || !quantity) {
-        alert("❗ Please complete all fields.");
+        alert("⚠️ Please fill in all fields.");
         return;
       }
 
-      const payload = {
-        barcode: barcode,
-        productName: productName,
-        quantity: quantity
-      };
+      const data = { barcode, productName, quantity };
 
       fetch(WEB_APP_URL, {
         method: "POST",
-        body: JSON.stringify(payload)
+        body: JSON.stringify(data),
+        headers: {
+          "Content-Type": "application/json"
+        }
       })
       .then(() => {
-        alert("✅ Submitted successfully!");
+        alert("✅ Submitted to Google Sheet!");
         document.getElementById("barcode").value = "";
         document.getElementById("productName").value = "";
         document.getElementById("quantity").value = "";
       })
-      .catch((err) => {
-        alert("❌ Error: " + err);
-      });
+      .catch(err => alert("❌ Error: " + err));
     }
   </script>
 </body>
