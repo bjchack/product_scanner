@@ -6,11 +6,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
-    body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; text-align: center; }
-    h2 { color: #333; }
-    #reader { width: 300px; margin: auto; display: none; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9f9f9;
+      text-align: center;
+      padding: 20px;
+    }
+    #reader {
+      width: 300px;
+      margin: 0 auto;
+      display: none;
+    }
     input, button {
-      margin: 10px;
+      display: block;
+      margin: 10px auto;
       padding: 10px;
       font-size: 16px;
       width: 90%;
@@ -19,22 +28,23 @@
       border: 1px solid #ccc;
     }
     button {
-      background: #4CAF50;
+      background-color: #28a745;
       color: white;
       border: none;
     }
   </style>
 </head>
 <body>
-  <h2>📦 Product Scanner</h2>
+  <h2>📷 Scan Product</h2>
+
   <input type="text" id="barcode" placeholder="Scanned Barcode" readonly>
-  <button onclick="startScan()">📷 Scan Product</button>
+  <button onclick="startScan()">📸 Start Scan</button>
   <div id="reader"></div>
 
   <input type="text" id="productName" placeholder="Product Name">
   <input type="number" id="quantity" placeholder="Quantity">
 
-  <button onclick="submitForm()">✅ Submit to Google Sheet</button>
+  <button onclick="submitData()">✅ Submit to Google Sheet</button>
 
   <script>
     let scanner;
@@ -45,45 +55,36 @@
       scanner.start(
         { facingMode: "environment" },
         { fps: 10, qrbox: 250 },
-        (decodedText) => {
-          document.getElementById("barcode").value = decodedText;
+        (text) => {
+          document.getElementById("barcode").value = text;
           scanner.stop().then(() => {
             document.getElementById("reader").style.display = "none";
           });
         },
-        (err) => { console.warn(err); }
-      ).catch((err) => {
-        alert("Camera Error: " + err);
-      });
+        (err) => {}
+      ).catch((err) => alert("Camera error: " + err));
     }
 
-    function submitForm() {
-      const url = "https://script.google.com/macros/s/AKfycbx5dZVzDn6_uxVIugjR0LYgMBdIi9lfv9jgGERX-zYbWBvaNhymtMmmiao-tvqYSGdr/exec";
+    function submitData() {
       const barcode = document.getElementById("barcode").value;
       const productName = document.getElementById("productName").value;
       const quantity = document.getElementById("quantity").value;
 
-      fetch(url, {
+      fetch("https://script.google.com/macros/s/AKfycbxgbITpnQvMKoYsNeLNzNFiyKG-t9BdQCDb_LLynmn-lFCfJx7h2LNjd1HnIgGMsPtV/exec", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          barcode,
-          productName,
-          quantity
-        })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ barcode, productName, quantity })
       })
       .then(res => res.text())
-      .then(data => {
-        alert("✅ Submitted successfully!");
+      .then(res => {
+        alert("✅ Submitted to Sheet!");
         document.getElementById("barcode").value = "";
         document.getElementById("productName").value = "";
         document.getElementById("quantity").value = "";
       })
       .catch(err => {
-        console.error("❌ Error:", err);
-        alert("❌ Submit failed. Check console.");
+        console.error(err);
+        alert("❌ Failed to submit.");
       });
     }
   </script>
