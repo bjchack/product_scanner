@@ -17,16 +17,24 @@ function submitData() {
   formData.append("entry.1024576307", quantity);
   formData.append("entry.1777691282", price);
 
-  fetch(formURL, { method: "POST", body: formData })
-    .then(() => {
-      document.getElementById("status").textContent = "✅ Submitted!";
+  const xhr = new XMLHttpRequest();
+  xhr.open("POST", formURL, true);
+  xhr.onload = function () {
+    if (xhr.status === 200) {
+      document.getElementById("status").textContent = "✅ Submitted successfully!";
       document.getElementById("status").style.color = "green";
+      document.getElementById("success-sound").play();
+
+      // Clear inputs
       document.getElementById("barcode").value = "";
       document.getElementById("productName").value = "";
       document.getElementById("quantity").value = "";
       document.getElementById("price").value = "";
-      document.getElementById("success-sound").play();
-    });
-
-  // REMOVE the .catch block – Google Forms always returns 200
+    } else {
+      document.getElementById("status").textContent = "❌ Submission failed.";
+      document.getElementById("status").style.color = "red";
+      document.getElementById("error-sound").play();
+    }
+  };
+  xhr.send(formData);
 }
