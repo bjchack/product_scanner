@@ -8,11 +8,23 @@
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 </head>
 <body>
-  <div class="container">
+  <div class="container" id="login-form">
+    <h2>🔐 Secure Login</h2>
+    <input type="password" id="passwordInput" placeholder="Enter Password" />
+    <button onclick="login()">🔓 Login</button>
+
+    <div style="margin-top: 20px;">
+      <a href="https://facebook.com/yourprofile" target="_blank">📘 Facebook</a><br/>
+      <small>© 2025 Product Scanner</small>
+    </div>
+  </div>
+
+  <div class="container" id="scanner-section" style="display: none;">
+    <button id="logout-btn" onclick="logout()">Logout</button>
     <h2>📦 Product Scanner</h2>
 
     <div class="input-group">
-<input type="text" id="barcode" placeholder="Scanned or Manual Barcode" />
+      <input type="text" id="barcode" placeholder="Scanned or Manual Barcode" />
       <button onclick="startScan()">📷 Scan Barcode</button>
     </div>
 
@@ -29,6 +41,11 @@
 
     <audio id="success-sound" src="./sounds/success.mp3"></audio>
     <audio id="error-sound" src="./sounds/error.mp3"></audio>
+
+    <div style="margin-top: 20px;">
+      <a href="https://facebook.com/yourprofile" target="_blank">📘 Facebook</a><br/>
+      <small>© 2025 Product Scanner</small>
+    </div>
   </div>
 
   <script src="script.js"></script>
