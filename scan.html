@@ -1,31 +1,35 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>📦 Product Scanner</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Product Scanner</title>
+  <link rel="stylesheet" href="style.css" />
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 </head>
 <body>
   <div class="container">
-    <h2>📦 Scan Products</h2>
-    <button onclick="logout()">🔓 Logout</button>
+    <h2>📦 Product Scanner</h2>
 
-    <div id="reader" style="display: none;"></div>
-    <button onclick="startScan()">📷 Start QR Scan</button>
+    <div class="input-group">
+      <input type="text" id="barcode" placeholder="Scanned Barcode" readonly />
+      <button onclick="startScan()">📷 Scan Barcode</button>
+    </div>
 
-    <input type="text" id="barcode" placeholder="Scanned Barcode (or enter manually)">
-    <input type="text" id="productName" placeholder="Product Name">
-    <input type="number" id="quantity" placeholder="Quantity">
-    <input type="number" id="price" placeholder="Price (₱)">
+    <div id="reader"></div>
+
+    <input type="text" id="productName" placeholder="Product Name" />
+    <input type="number" id="quantity" placeholder="Quantity" />
+    <input type="number" id="price" placeholder="Price" />
+
     <button onclick="submitData()">✅ Submit</button>
-
     <p id="status"></p>
-  </div>
 
-  <audio id="success-sound" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
-  <audio id="error-sound" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
+    <button onclick="toggleMute()" id="muteBtn">🔊 Sound ON</button>
+
+    <audio id="success-sound" src="success.mp3"></audio>
+    <audio id="error-sound" src="error.mp3"></audio>
+  </div>
 
   <script src="script.js"></script>
 </body>
