@@ -1,42 +1,108 @@
-body {
-  font-family: Arial, sans-serif;
-  background: #f2f2f2;
+* {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
-  text-align: center;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f1f3f4;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 10px;
 }
 
 .container {
+  background: #ffffff;
   padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  width: 100%;
   max-width: 400px;
-  margin: auto;
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  text-align: center;
 }
 
-input, button {
+h2 {
+  margin-bottom: 20px;
+  color: #333;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="password"] {
   width: 100%;
-  padding: 12px;
+  padding: 12px 16px;
   margin: 10px 0;
-  font-size: 16px;
-  border-radius: 6px;
   border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 16px;
 }
 
 button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+button:hover {
+  opacity: 0.95;
+}
+
+button:nth-of-type(1) {
+  background-color: #007bff;
+  color: white;
+}
+
+button:nth-of-type(2) {
   background-color: #28a745;
   color: white;
-  border: none;
-  cursor: pointer;
 }
 
 button#muteBtn {
-  background-color: #007bff;
+  background-color: #ffc107;
+  color: #333;
 }
 
 #reader {
   width: 100%;
-  margin: 10px 0;
+  margin: 15px 0;
   display: none;
+}
+
+#status {
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+/* Login form style */
+#login-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#logout-btn {
+  width: 100%;
+  background-color: #dc3545;
+  color: white;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+  margin-bottom: 15px;
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 15px;
+    border-radius: 10px;
+  }
 }
