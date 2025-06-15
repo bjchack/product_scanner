@@ -1,118 +1,17 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Barcode Scanner</title>
-  <script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2@1.2.6/dist/quagga.min.js"></script>
-  <style>
-    body {
-      font-family: sans-serif;
-      text-align: center;
-      background: #f2f2f2;
-      margin: 0;
-      padding: 20px;
-    }
-    #scanner {
-      width: 100%;
-      max-width: 400px;
-      margin: auto;
-      border: 2px solid #000;
-    }
-    #result {
-      margin-top: 20px;
-      font-size: 1.2em;
-      font-weight: bold;
-    }
-    button {
-      padding: 10px 20px;
-      font-size: 1em;
-      margin-top: 10px;
-      cursor: pointer;
-    }
-    ul {
-      list-style: none;
-      padding: 0;
-    }
-    li {
-      background: #fff;
-      margin: 5px;
-      padding: 10px;
-      border-radius: 5px;
-    }
-  </style>
+  <title>QR Code Scanner</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h2>📷 Barcode Scanner</h2>
-  <div id="scanner"></div>
-  <div id="result">Waiting for scan...</div>
-  <button onclick="saveResult()">💾 Save Scan</button>
-  <button onclick="clearHistory()">🧹 Clear History</button>
+  <h2>📷 QR Code Scanner</h2>
+  <div id="reader" style="width:100%;"></div>
+  <p>Result: <span id="result">None</span></p>
 
-  <h3>📜 Scan History</h3>
-  <ul id="historyList"></ul>
-
-  <script>
-    let lastCode = "";
-
-    function startScanner() {
-      Quagga.init({
-        inputStream: {
-          type: "LiveStream",
-          target: document.querySelector('#scanner'),
-          constraints: {
-            facingMode: "environment" // back camera
-          }
-        },
-        decoder: {
-          readers: ["code_128_reader", "ean_reader", "ean_8_reader", "upc_reader", "upc_e_reader"]
-        }
-      }, function(err) {
-        if (err) {
-          console.error(err);
-          alert("Camera error: " + err);
-          return;
-        }
-        Quagga.start();
-      });
-
-      Quagga.onDetected(function(result) {
-        const code = result.codeResult.code;
-        if (code !== lastCode) {
-          lastCode = code;
-          document.getElementById("result").innerText = "Scanned: " + code;
-        }
-      });
-    }
-
-    function saveResult() {
-      const code = lastCode;
-      if (!code) return alert("No scan yet!");
-      let history = JSON.parse(localStorage.getItem("scanHistory") || "[]");
-      history.push(code);
-      localStorage.setItem("scanHistory", JSON.stringify(history));
-      showHistory();
-    }
-
-    function showHistory() {
-      const history = JSON.parse(localStorage.getItem("scanHistory") || "[]");
-      const list = document.getElementById("historyList");
-      list.innerHTML = "";
-      history.slice().reverse().forEach(code => {
-        const li = document.createElement("li");
-        li.textContent = code;
-        list.appendChild(li);
-      });
-    }
-
-    function clearHistory() {
-      localStorage.removeItem("scanHistory");
-      showHistory();
-    }
-
-    // Start scanner on load
-    startScanner();
-    showHistory();
-  </script>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <script src="script.js"></script>
 </body>
 </html>
