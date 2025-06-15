@@ -28,8 +28,6 @@
   <p id="status" style="color: green;"></p>
 
   <script>
-    const scriptURL = "https://script.google.com/macros/s/AKfycbzs4JqyH3d0_GM14zeJH1HWMv_rkaU6lraWcxIKBYJo9CyEzML7P9oBorJbmovxdqOx/exec";
-
     function startScan() {
       document.getElementById("reader").style.display = "block";
       const scanner = new Html5Qrcode("reader");
@@ -46,37 +44,30 @@
     }
 
     function submitData() {
-      const barcode = document.getElementById("barcode").value.trim();
-      const productName = document.getElementById("productName").value.trim();
-      const quantity = document.getElementById("quantity").value.trim();
+      const barcode = encodeURIComponent(document.getElementById("barcode").value.trim());
+      const product = encodeURIComponent(document.getElementById("productName").value.trim());
+      const quantity = encodeURIComponent(document.getElementById("quantity").value.trim());
 
-      if (!barcode || !productName || !quantity) {
+      if (!barcode || !product || !quantity) {
         alert("❗ Please complete all fields.");
         return;
       }
 
-      fetch(scriptURL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ barcode, productName, quantity })
-      })
-      .then(res => res.json())
-      .then(response => {
-        if (response.result === "success") {
+      const formURL = "https://docs.google.com/forms/d/e/1FAIpQLSc7L0-8TQxpw0EL3BEDufG5YOesOOO1Y1VtYeHWxu3zaIqnwQ/formResponse?";
+      const fullURL = `${formURL}entry.1329060812=${barcode}&entry.10487006=${product}&entry.1024576307=${quantity}`;
+
+      fetch(fullURL, { method: "POST", mode: "no-cors" })
+        .then(() => {
           document.getElementById("status").textContent = "✅ Submitted successfully!";
-        } else {
-          document.getElementById("status").textContent = "❌ Error: " + response.error;
+          document.getElementById("status").style.color = "green";
+          document.getElementById("barcode").value = "";
+          document.getElementById("productName").value = "";
+          document.getElementById("quantity").value = "";
+        })
+        .catch(() => {
+          document.getElementById("status").textContent = "❌ Failed to submit.";
           document.getElementById("status").style.color = "red";
-        }
-        // Clear inputs
-        document.getElementById("barcode").value = "";
-        document.getElementById("productName").value = "";
-        document.getElementById("quantity").value = "";
-      })
-      .catch(err => {
-        document.getElementById("status").textContent = "❌ Failed to submit.";
-        document.getElementById("status").style.color = "red";
-      });
+        });
     }
   </script>
 </body>
