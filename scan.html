@@ -8,26 +8,31 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f9f9f9;
-      padding: 20px;
+      background: #f0f0f0;
       text-align: center;
+      padding: 20px;
     }
-    h2 { color: #333; }
-    #reader { width: 300px; margin: auto; display: none; }
+    #reader {
+      width: 300px;
+      margin: 20px auto;
+      display: none;
+    }
     input, button {
       margin: 10px;
-      padding: 10px;
+      padding: 12px;
       font-size: 16px;
       width: 90%;
-      max-width: 300px;
-      border-radius: 6px;
+      max-width: 320px;
       border: 1px solid #ccc;
+      border-radius: 8px;
     }
     button {
-      background: #4CAF50;
+      background-color: #4CAF50;
       color: white;
       border: none;
-      cursor: pointer;
+    }
+    h2 {
+      margin-bottom: 20px;
     }
   </style>
 </head>
@@ -35,16 +40,17 @@
   <h2>📦 Product Scanner</h2>
 
   <input type="text" id="barcode" placeholder="Scanned Barcode" readonly>
-  <button onclick="startScan()">📷 Scan Product</button>
+  <button onclick="startScan()">📷 Start Scan</button>
   <div id="reader"></div>
 
   <input type="text" id="productName" placeholder="Product Name">
   <input type="number" id="quantity" placeholder="Quantity">
 
-  <button onclick="submitForm()">✅ Submit to Google Form</button>
+  <button onclick="submitForm()">✅ Submit to Google Sheet</button>
 
   <script>
     let scanner;
+    const formURL = "https://docs.google.com/forms/d/e/1FAIpQLSdmEa5-5h6USZ4YuU6x6yqsH95yJ11MaN7cMeXCYWHQmNUgQw/formResponse";
 
     function startScan() {
       document.getElementById("reader").style.display = "block";
@@ -58,32 +64,33 @@
             document.getElementById("reader").style.display = "none";
           });
         },
-        (err) => { console.warn(err); }
+        (err) => {
+          console.warn(err);
+        }
       ).catch((err) => {
         alert("Camera Error: " + err);
       });
     }
 
     function submitForm() {
-      const formURL = "https://docs.google.com/forms/d/e/1FAIpQLSc98BxdIwb6-4iDDXxq-lZFc-20xEpXbSxuBhQ9pzL1-bycsA/formResponse";
       const barcode = document.getElementById("barcode").value;
       const productName = document.getElementById("productName").value;
       const quantity = document.getElementById("quantity").value;
 
       const data = new URLSearchParams();
-      data.append("entry.1590723981", barcode);
-      data.append("entry.1120019988", productName);
-      data.append("entry.346944926", quantity);
+      data.append("entry.1590723981", barcode);        // Barcode
+      data.append("entry.1120019988", productName);     // Product Name
+      data.append("entry.346944926", quantity);         // Quantity
 
       fetch(formURL + "?" + data.toString(), {
         method: "GET",
         mode: "no-cors"
-      }).then(() => {
-        alert("✅ Submitted to Google Sheet!");
-        document.getElementById("barcode").value = "";
-        document.getElementById("productName").value = "";
-        document.getElementById("quantity").value = "";
       });
+
+      alert("✅ Submitted!");
+      document.getElementById("barcode").value = "";
+      document.getElementById("productName").value = "";
+      document.getElementById("quantity").value = "";
     }
   </script>
 </body>
