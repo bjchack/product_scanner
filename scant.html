@@ -1,0 +1,113 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>POS QR Scanner (Mobile View)</title>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      padding: 10px;
+      margin: 0;
+      background: #f4f4f4;
+    }
+    h2, h3 {
+      text-align: center;
+    }
+    #reader {
+      width: 100%;
+      max-width: 350px;
+      margin: 0 auto 15px;
+      border: 2px solid #ccc;
+      border-radius: 8px;
+    }
+    #product-info, .input-group, #cart-list, #total-section {
+      max-width: 400px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 10px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    input[type=number], button {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      margin-top: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    ul { list-style-type: none; padding: 0; }
+    li { padding: 8px; border-bottom: 1px solid #eee; font-size: 16px; }
+    #total-section { text-align: center; font-size: 18px; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <h2>📦 Mobile POS QR Scanner</h2>  <div id="reader"></div>  <div id="product-info" style="display:none">
+    <p><strong>Product:</strong> <span id="prod-name"></span></p>
+    <p><strong>Price:</strong> ₱<span id="prod-price"></span></p>
+    <p><strong>Stock Left:</strong> <span id="prod-stock"></span></p>
+    <input type="number" id="quantity" placeholder="Enter Quantity" min="1">
+    <button onclick="addToCart()">➕ Add to Cart</button>
+  </div>  <h3>🛒 Cart</h3>
+  <ul id="cart-list"></ul>  <div id="total-section">
+    <strong>Total:</strong> ₱<span id="total">0</span>
+  </div>  <script>
+    const scriptURL = "https://script.google.com/macros/s/AKfycbxuDdcrVslatUa1BDRlQs57yviTS23NL0AUM0aSC-coA17Zd9qumRvBNmlqaGSKw_-rXA/exec";
+    let products = [
+      { barcode: "123456", name: "Butane Gas", price: 30, qty: 300 },
+      { barcode: "789101", name: "Sardinas", price: 18, qty: 100 }
+    ];
+    let cart = [], total = 0, currentProduct = null;
+
+    function updateProductInfo(product) {
+      document.getElementById("prod-name").innerText = product.name;
+      document.getElementById("prod-price").innerText = product.price;
+      document.getElementById("prod-stock").innerText = product.qty;
+      document.getElementById("product-info").style.display = "block";
+    }
+
+    function addToCart() {
+      const qty = parseInt(document.getElementById("quantity").value);
+      if (!currentProduct || isNaN(qty) || qty < 1) return alert("Invalid quantity");
+      if (qty > currentProduct.qty) return alert(`Only ${currentProduct.qty} left.`);
+
+      const subtotal = currentProduct.price * qty;
+      cart.push({ name: currentProduct.name, qty, subtotal });
+      total += subtotal;
+      currentProduct.qty -= qty;
+      document.getElementById("total").innerText = total;
+
+      const li = document.createElement("li");
+      li.innerText = `${qty} x ${currentProduct.name} = ₱${subtotal}`;
+      document.getElementById("cart-list").appendChild(li);
+
+      // Send sale to Google Sheets
+      fetch(scriptURL, {
+        method: "POST",
+        body: JSON.stringify({
+          type: "sale",
+          barcode: currentProduct.barcode,
+          name: currentProduct.name,
+          quantity: qty,
+          total: subtotal
+        })
+      });
+
+      document.getElementById("product-info").style.display = "none";
+      document.getElementById("quantity").value = "";
+    }
+
+    function onScanSuccess(decodedText) {
+      currentProduct = products.find(p => p.barcode === decodedText);
+      if (currentProduct) {
+        updateProductInfo(currentProduct);
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+      } else {
+        alert("Product not found");
+      }
+    }
+
+    new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 }).render(onScanSuccess);
+  </script></body>
+</html>
