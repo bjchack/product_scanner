@@ -2,45 +2,40 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>📦 Product Scanner</title>
+  <title>Product Scanner</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
       background: #f0f0f0;
-      text-align: center;
       padding: 20px;
+      text-align: center;
     }
-    #reader {
-      width: 300px;
-      margin: 20px auto;
-      display: none;
-    }
+    h2 { color: #333; }
+    #reader { width: 300px; margin: auto; display: none; }
     input, button {
-      margin: 10px;
-      padding: 12px;
+      margin: 10px auto;
+      padding: 10px;
       font-size: 16px;
       width: 90%;
-      max-width: 320px;
+      max-width: 300px;
+      border-radius: 6px;
       border: 1px solid #ccc;
-      border-radius: 8px;
+      display: block;
     }
     button {
-      background-color: #4CAF50;
+      background: #4CAF50;
       color: white;
       border: none;
-    }
-    h2 {
-      margin-bottom: 20px;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
   <h2>📦 Product Scanner</h2>
-
   <input type="text" id="barcode" placeholder="Scanned Barcode" readonly>
-  <button onclick="startScan()">📷 Start Scan</button>
+  <button onclick="startScan()">📷 Scan Product</button>
   <div id="reader"></div>
 
   <input type="text" id="productName" placeholder="Product Name">
@@ -49,8 +44,9 @@
   <button onclick="submitForm()">✅ Submit to Google Sheet</button>
 
   <script>
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyXNWEk7WGWpK_boWC1VSgzcrbhs_5ONWNyd3ZSECWlTJJ6X9CMf5n9yly3QA0JwGFC/exec";
+
     let scanner;
-    const formURL = "https://docs.google.com/forms/d/e/1FAIpQLSdmEa5-5h6USZ4YuU6x6yqsH95yJ11MaN7cMeXCYWHQmNUgQw/formResponse";
 
     function startScan() {
       document.getElementById("reader").style.display = "block";
@@ -64,9 +60,7 @@
             document.getElementById("reader").style.display = "none";
           });
         },
-        (err) => {
-          console.warn(err);
-        }
+        (err) => { console.warn(err); }
       ).catch((err) => {
         alert("Camera Error: " + err);
       });
@@ -77,20 +71,30 @@
       const productName = document.getElementById("productName").value;
       const quantity = document.getElementById("quantity").value;
 
-      const data = new URLSearchParams();
-      data.append("entry.1590723981", barcode);        // Barcode
-      data.append("entry.1120019988", productName);     // Product Name
-      data.append("entry.346944926", quantity);         // Quantity
+      if (!barcode || !productName || !quantity) {
+        alert("❗ Please complete all fields.");
+        return;
+      }
 
-      fetch(formURL + "?" + data.toString(), {
-        method: "GET",
-        mode: "no-cors"
+      const payload = {
+        barcode: barcode,
+        productName: productName,
+        quantity: quantity
+      };
+
+      fetch(WEB_APP_URL, {
+        method: "POST",
+        body: JSON.stringify(payload)
+      })
+      .then(() => {
+        alert("✅ Submitted successfully!");
+        document.getElementById("barcode").value = "";
+        document.getElementById("productName").value = "";
+        document.getElementById("quantity").value = "";
+      })
+      .catch((err) => {
+        alert("❌ Error: " + err);
       });
-
-      alert("✅ Submitted!");
-      document.getElementById("barcode").value = "";
-      document.getElementById("productName").value = "";
-      document.getElementById("quantity").value = "";
     }
   </script>
 </body>
