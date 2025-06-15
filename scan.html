@@ -5,28 +5,27 @@
   <title>📦 Product Scanner</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
-  <script src="https://unpkg.com/html5-qrcode"></script>
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 </head>
 <body>
   <div class="container">
-    <h2>📦 Product Scanner</h2>
+    <h2>📦 Scan Products</h2>
+    <button onclick="logout()">🔓 Logout</button>
 
-    <input type="text" id="barcode" placeholder="Scanned Barcode" readonly>
-    <button onclick="startScan()">📷 Scan Barcode</button>
     <div id="reader" style="display: none;"></div>
+    <button onclick="startScan()">📷 Start QR Scan</button>
 
+    <input type="text" id="barcode" placeholder="Scanned Barcode (or enter manually)">
     <input type="text" id="productName" placeholder="Product Name">
     <input type="number" id="quantity" placeholder="Quantity">
     <input type="number" id="price" placeholder="Price (₱)">
-
     <button onclick="submitData()">✅ Submit</button>
-    <button onclick="logout()">🔓 Logout</button>
 
     <p id="status"></p>
-
-    <audio id="successSound" src="https://www.soundjay.com/buttons/sounds/button-3.mp3"></audio>
-    <audio id="errorSound" src="https://www.soundjay.com/buttons/sounds/beep-07.mp3"></audio>
   </div>
+
+  <audio id="success-sound" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
+  <audio id="error-sound" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
 
   <script src="script.js"></script>
 </body>
