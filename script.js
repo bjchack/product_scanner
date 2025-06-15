@@ -1,25 +1,15 @@
-function login() {
-  const user = document.getElementById("username").value.trim();
-  const pass = document.getElementById("password").value.trim();
-  if (user === "admin" && pass === "1234") {
-    localStorage.setItem("loggedIn", "true");
-    window.location.href = "scan.html";
-  } else {
-    document.getElementById("login-status").innerText = "Invalid login!";
-    playSound("error");
-  }
-}
-
-function checkLogin() {
-  if (localStorage.getItem("loggedIn") !== "true") {
-    window.location.href = "index.html";
-  }
-}
+const formURL = "https://docs.google.com/forms/d/e/1FAIpQLSc7L0-8TQxpw0EL3BEDufG5YOesOOO1Y1VtYeHWxu3zaIqnwQ/formResponse";
 
 function logout() {
   localStorage.removeItem("loggedIn");
   window.location.href = "index.html";
 }
+
+window.onload = () => {
+  if (localStorage.getItem("loggedIn") !== "true") {
+    window.location.href = "index.html";
+  }
+};
 
 function startScan() {
   document.getElementById("reader").style.display = "block";
@@ -37,37 +27,47 @@ function startScan() {
 }
 
 function submitData() {
-  const barcode = encodeURIComponent(document.getElementById("barcode").value.trim());
-  const product = encodeURIComponent(document.getElementById("productName").value.trim());
-  const quantity = encodeURIComponent(document.getElementById("quantity").value.trim());
+  const barcode = document.getElementById("barcode").value.trim();
+  const product = document.getElementById("productName").value.trim();
+  const quantity = document.getElementById("quantity").value.trim();
+  const price = document.getElementById("price").value.trim();
 
-  if (!barcode || !product || !quantity) {
-    document.getElementById("status").textContent = "❗ Please complete all fields.";
-    document.getElementById("status").style.color = "red";
+  if (!barcode || !product || !quantity || !price) {
     playSound("error");
+    document.getElementById("status").textContent = "❗ Complete all fields.";
+    document.getElementById("status").style.color = "red";
     return;
   }
 
-  const formURL = "https://docs.google.com/forms/d/e/1FAIpQLSc7L0-8TQxpw0EL3BEDufG5YOesOOO1Y1VtYeHWxu3zaIqnwQ/formResponse?";
-  const fullURL = `${formURL}entry.1329060812=${barcode}&entry.10487006=${product}&entry.1024576307=${quantity}`;
+  const data = new FormData();
+  data.append("entry.1329060812", barcode);
+  data.append("entry.10487006", product);
+  data.append("entry.1024576307", quantity);
+  data.append("entry.1777691282", price);
 
-  fetch(fullURL, { method: "POST", mode: "no-cors" })
-    .then(() => {
-      document.getElementById("status").textContent = "✅ Submitted successfully!";
-      document.getElementById("status").style.color = "green";
-      document.getElementById("barcode").value = "";
-      document.getElementById("productName").value = "";
-      document.getElementById("quantity").value = "";
-      playSound("success");
-    })
-    .catch(() => {
-      document.getElementById("status").textContent = "❌ Failed to submit.";
-      document.getElementById("status").style.color = "red";
-      playSound("error");
-    });
+  fetch(formURL, {
+    method: "POST",
+    mode: "no-cors",
+    body: data
+  }).then(() => {
+    playSound("success");
+    document.getElementById("status").textContent = "✅ Submitted successfully!";
+    document.getElementById("status").style.color = "green";
+    document.getElementById("barcode").value = "";
+    document.getElementById("productName").value = "";
+    document.getElementById("quantity").value = "";
+    document.getElementById("price").value = "";
+  }).catch(() => {
+    playSound("error");
+    document.getElementById("status").textContent = "❌ Submission failed.";
+    document.getElementById("status").style.color = "red";
+  });
 }
 
 function playSound(type) {
-  const sound = new Audio("sounds/" + (type === "success" ? "success.mp3" : "error.mp3"));
-  sound.play();
+  if (type === "success") {
+    document.getElementById("successSound").play();
+  } else {
+    document.getElementById("errorSound").play();
+  }
 }
