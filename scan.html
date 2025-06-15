@@ -2,25 +2,32 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Product Scanner</title>
+  <title>📦 Product Scanner</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/html5-qrcode"></script>
 </head>
-<body onload="checkLogin()">
+<body>
   <div class="container">
     <h2>📦 Product Scanner</h2>
+
     <input type="text" id="barcode" placeholder="Scanned Barcode" readonly>
     <button onclick="startScan()">📷 Scan Barcode</button>
-    <div id="reader"></div>
+    <div id="reader" style="display: none;"></div>
 
     <input type="text" id="productName" placeholder="Product Name">
     <input type="number" id="quantity" placeholder="Quantity">
+    <input type="number" id="price" placeholder="Price (₱)">
+
     <button onclick="submitData()">✅ Submit</button>
-    <button onclick="logout()" class="logout">Logout</button>
+    <button onclick="logout()">🔓 Logout</button>
 
     <p id="status"></p>
+
+    <audio id="successSound" src="https://www.soundjay.com/buttons/sounds/button-3.mp3"></audio>
+    <audio id="errorSound" src="https://www.soundjay.com/buttons/sounds/beep-07.mp3"></audio>
   </div>
+
   <script src="script.js"></script>
 </body>
 </html>
