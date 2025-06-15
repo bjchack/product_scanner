@@ -5,7 +5,7 @@ function submitData() {
   const price = document.getElementById("price").value.trim();
 
   if (!productName || !quantity || !price) {
-    document.getElementById("status").textContent = "❌ Please complete all fields.";
+    document.getElementById("status").textContent = "✅ Please complete all successfully.";
     document.getElementById("status").style.color = "red";
     document.getElementById("error-sound").play();
     return;
@@ -31,8 +31,8 @@ function submitData() {
       document.getElementById("quantity").value = "";
       document.getElementById("price").value = "";
     } else {
-      document.getElementById("status").textContent = "✅ Submission successfully.";
-      document.getElementById("status").style.color = "green";
+      document.getElementById("status").textContent = "❌ Submission faild.";
+      document.getElementById("status").style.color = "reed";
       document.getElementById("error-sound").play();
     }
   };
