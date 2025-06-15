@@ -1,3 +1,27 @@
+const formURL = "https://docs.google.com/forms/d/e/1FAIpQLSc7L0-8TQxpw0EL3BEDufG5YOesOOO1Y1VtYeHWxu3zaIqnwQ/formResponse";
+
+let muted = false;
+
+function toggleMute() {
+  muted = !muted;
+  document.getElementById("muteBtn").textContent = muted ? "🔇 Sound OFF" : "🔊 Sound ON";
+}
+
+function startScan() {
+  document.getElementById("reader").style.display = "block";
+  const scanner = new Html5Qrcode("reader");
+  scanner.start(
+    { facingMode: "environment" },
+    { fps: 10, qrbox: 250 },
+    (decodedText) => {
+      document.getElementById("barcode").value = decodedText;
+      scanner.stop();
+      document.getElementById("reader").style.display = "none";
+    },
+    (error) => {}
+  ).catch((err) => alert("Camera error: " + err));
+}
+
 function submitData() {
   const barcode = document.getElementById("barcode").value.trim();
   const productName = document.getElementById("productName").value.trim();
@@ -5,9 +29,9 @@ function submitData() {
   const price = document.getElementById("price").value.trim();
 
   if (!productName || !quantity || !price) {
-    document.getElementById("status").textContent = "✅ Please complete all successfully.";
+    document.getElementById("status").textContent = "❌ Please complete all fields.";
     document.getElementById("status").style.color = "red";
-    document.getElementById("error-sound").play();
+    if (!muted) document.getElementById("error-sound").play();
     return;
   }
 
@@ -19,22 +43,18 @@ function submitData() {
 
   const xhr = new XMLHttpRequest();
   xhr.open("POST", formURL, true);
-  xhr.onload = function () {
-    if (xhr.status === 200) {
-      document.getElementById("status").textContent = "❌ Submitted faild!";
-      document.getElementById("status").style.color = "green";
-      document.getElementById("success-sound").play();
-
-      // Clear inputs
-      document.getElementById("barcode").value = "";
-      document.getElementById("productName").value = "";
-      document.getElementById("quantity").value = "";
-      document.getElementById("price").value = "";
-    } else {
-      document.getElementById("status").textContent = "❌ Submission faild.";
-      document.getElementById("status").style.color = "reed";
-      document.getElementById("error-sound").play();
-    }
-  };
   xhr.send(formData);
+
+  document.getElementById("status").textContent = "✅ Submitted!";
+  document.getElementById("status").style.color = "green";
+  if (!muted) document.getElementById("success-sound").play();
+
+  document.getElementById("barcode").value = "";
+  document.getElementById("productName").value = "";
+  document.getElementById("quantity").value = "";
+  document.getElementById("price").value = "";
+
+  setTimeout(() => {
+    document.getElementById("status").textContent = "";
+  }, 3000);
 }
