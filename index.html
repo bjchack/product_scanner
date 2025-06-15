@@ -1,82 +1,19 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <title>BJC Product Scanner</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="style.css" />
-
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f9f9f9;
-      text-align: center;
-      padding: 20px;
-      margin: 0;
-    }
-
-    h1 {
-      color: #222;
-      font-size: 24px;
-      margin-bottom: 10px;
-    }
-
-    #reader {
-      width: 100%;
-      max-width: 400px;
-      margin: 0 auto 20px;
-      border: 3px solid #007bff;
-      border-radius: 12px;
-    }
-
-    #result-container {
-      font-size: 16px;
-      padding: 10px 15px;
-      background: #e6f7ff;
-      border: 1px solid #91d5ff;
-      border-radius: 8px;
-      max-width: 400px;
-      margin: 10px auto;
-      color: #333;
-      word-wrap: break-word;
-    }
-
-    footer {
-      margin-top: 30px;
-      font-size: 14px;
-      color: #aaa;
-    }
-
-    .btn {
-      padding: 10px 20px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-
-    .btn:hover {
-      background-color: #0056b3;
-    }
-  </style>
+  <meta charset="UTF-8">
+  <title>Login - Product Scanner</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-  <h1>📷 BJC Product Scanner</h1>
-
-  <div id="reader"></div>
-
-  <div id="result-container">
-    <strong>Result:</strong> <span id="result">None</span>
+  <div class="container">
+    <h2>🔐 Login</h2>
+    <input type="text" id="username" placeholder="Username">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+    <p id="login-status"></p>
   </div>
-
-  <footer>
-    Powered by <a href="https://github.com/mebjas/html5-qrcode" target="_blank">html5-qrcode</a> | Made by BJC Team
-  </footer>
-
-  <script src="https://unpkg.com/html5-qrcode"></script>
   <script src="script.js"></script>
 </body>
 </html>
