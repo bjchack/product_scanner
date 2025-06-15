@@ -6,99 +6,57 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      background: #f9f9f9;
-      padding: 20px;
-    }
-    #reader {
-      width: 300px;
-      margin: auto;
-      display: none;
-    }
-    input, button {
-      width: 90%;
-      max-width: 300px;
-      padding: 10px;
-      margin: 10px auto;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 16px;
-    }
-    button {
-      background: #28a745;
-      color: white;
-      border: none;
-    }
-    #status {
-      margin-top: 10px;
-      font-weight: bold;
-    }
+    body { font-family: Arial; text-align: center; padding: 20px; background: #f5f5f5; }
+    input, button { padding: 10px; width: 90%; margin: 10px auto; display: block; border-radius: 8px; }
+    button { background: #2196F3; color: white; border: none; }
+    #reader { width: 300px; margin: auto; display: none; }
   </style>
 </head>
 <body>
   <h2>📦 Product Scanner</h2>
 
-  <input type="text" id="barcode" placeholder="Scanned Barcode" readonly>
-  <button onclick="startScan()">📷 Scan Product</button>
+  <input type="text" id="barcode" placeholder="Scanned Barcode" readonly />
+  <button onclick="startScanner()">📷 Scan</button>
   <div id="reader"></div>
 
-  <input type="text" id="productName" placeholder="Product Name">
-  <input type="number" id="quantity" placeholder="Quantity">
+  <input type="text" id="productName" placeholder="Product Name" />
+  <input type="number" id="quantity" placeholder="Quantity" />
+
   <button onclick="submitData()">✅ Submit</button>
 
-  <div id="status"></div>
+  <p id="status"></p>
 
   <script>
-    const scriptURL = "SCRIPT_URL_HERE"; // replace with your Apps Script Web App URL
-    let scanner;
+    const readerDiv = document.getElementById("reader");
 
-    function startScan() {
-      document.getElementById("reader").style.display = "block";
-      scanner = new Html5Qrcode("reader");
+    function startScanner() {
+      readerDiv.style.display = "block";
+      const scanner = new Html5Qrcode("reader");
       scanner.start(
         { facingMode: "environment" },
         { fps: 10, qrbox: 250 },
-        (decodedText) => {
-          document.getElementById("barcode").value = decodedText;
-          scanner.stop().then(() => {
-            document.getElementById("reader").style.display = "none";
-          });
+        (text) => {
+          document.getElementById("barcode").value = text;
+          scanner.stop().then(() => readerDiv.style.display = "none");
         },
-        (error) => {}
-      ).catch(err => {
-        alert("Camera error: " + err);
-      });
+        (err) => console.warn(err)
+      ).catch((err) => alert("Camera error: " + err));
     }
 
     function submitData() {
+      const url = "https://script.google.com/macros/s/AKfycbydY5TvlL6PQZtYRskoZoXCJU2bCm_vopAwvDk1jeCg93yIKnZVugyXF3ueSi351Dgc/exec";
       const barcode = document.getElementById("barcode").value;
       const productName = document.getElementById("productName").value;
       const quantity = document.getElementById("quantity").value;
 
-      if (!barcode || !productName || !quantity) {
-        document.getElementById("status").innerText = "❌ Please fill in all fields.";
-        return;
-      }
-
-      fetch(scriptURL, {
+      fetch(url, {
         method: "POST",
-        body: JSON.stringify({ barcode, productName, quantity }),
-        headers: {
-          "Content-Type": "application/json"
-        }
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ barcode, productName, quantity })
       })
-      .then(res => {
-        document.getElementById("status").innerText = "✅ Submitted successfully!";
-        document.getElementById("barcode").value = "";
-        document.getElementById("productName").value = "";
-        document.getElementById("quantity").value = "";
-      })
-      .catch(err => {
-        document.getElementById("status").innerText = "❌ Failed to submit!";
-        console.error(err);
-      });
+      .then(() => document.getElementById("status").innerText = "✅ Submitted successfully!")
+      .catch(err => document.getElementById("status").innerText = "❌ Failed to submit.");
     }
   </script>
 </body>
