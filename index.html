@@ -9,11 +9,21 @@
 <body>
   <div class="container">
     <h2>🔐 Login</h2>
-    <input type="text" id="username" placeholder="Username">
-    <input type="password" id="password" placeholder="Password">
+    <input type="password" id="password" placeholder="Enter password">
     <button onclick="login()">Login</button>
     <p id="login-status"></p>
   </div>
-  <script src="script.js"></script>
+
+  <script>
+    function login() {
+      const pw = document.getElementById("password").value;
+      if (pw === "admin123") { // 🔒 Set your password here
+        localStorage.setItem("loggedIn", "true");
+        window.location.href = "scan.html";
+      } else {
+        document.getElementById("login-status").textContent = "❌ Wrong password!";
+      }
+    }
+  </script>
 </body>
 </html>
