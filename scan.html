@@ -1,68 +1,76 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="UTF-8">
   <title>Product Scanner</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-    }
+    body { font-family: Arial, sans-serif; background: #f9f9f9; text-align: center; padding: 20px; }
     input, button {
-      padding: 10px;
-      margin: 5px 0;
-      width: 100%;
-      font-size: 16px;
+      margin: 10px; padding: 12px; width: 90%; max-width: 300px;
+      font-size: 16px; border-radius: 6px; border: 1px solid #ccc;
     }
+    button { background: #28a745; color: white; border: none; }
+    #reader { width: 300px; margin: auto; display: none; }
   </style>
 </head>
 <body>
   <h2>📦 Product Scanner</h2>
+  <input type="text" id="barcode" placeholder="Scanned Barcode" readonly>
+  <button onclick="startScan()">📷 Scan Barcode</button>
+  <div id="reader"></div>
 
-  <label for="barcode">Barcode:</label>
-  <input type="text" id="barcode" placeholder="Enter barcode">
-
-  <label for="productName">Product Name:</label>
-  <input type="text" id="productName" placeholder="Enter product name">
-
-  <label for="quantity">Quantity:</label>
-  <input type="number" id="quantity" placeholder="Enter quantity">
-
-  <button onclick="submitForm()">Submit</button>
+  <input type="text" id="productName" placeholder="Product Name">
+  <input type="number" id="quantity" placeholder="Quantity">
+  <button onclick="submitData()">✅ Submit</button>
 
   <p id="status" style="color: green;"></p>
 
   <script>
-    function submitForm() {
-      const barcode = document.getElementById("barcode").value;
-      const productName = document.getElementById("productName").value;
-      const quantity = document.getElementById("quantity").value;
+    const scriptURL = "https://script.google.com/macros/s/AKfycbwlmidWaekQooeW2eNhRT6AFoZS-cAWvobnTYcnGRlKBSZGV_BRlVRXdzOT2hhDNoWm/exec";
 
-      fetch("https://script.google.com/macros/s/AKfycbzgTYXZZe3HRh31L4OqTh6iO2lBBrnmrm1VQ2qP3hpZ5rGBnCHlqX4aAyUyeuL603ac/exec", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          barcode: barcode,
-          productName: productName,
-          quantity: quantity
-        })
+    function startScan() {
+      document.getElementById("reader").style.display = "block";
+      const scanner = new Html5Qrcode("reader");
+      scanner.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: 250 },
+        (decodedText) => {
+          document.getElementById("barcode").value = decodedText;
+          scanner.stop();
+          document.getElementById("reader").style.display = "none";
+        },
+        (error) => { /* ignore */ }
+      ).catch((err) => alert("Camera error: " + err));
+    }
+
+    function submitData() {
+      const barcode = document.getElementById("barcode").value.trim();
+      const productName = document.getElementById("productName").value.trim();
+      const quantity = document.getElementById("quantity").value.trim();
+
+      if (!barcode || !productName || !quantity) {
+        alert("❗ Please complete all fields.");
+        return;
+      }
+
+      fetch(scriptURL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ barcode, productName, quantity })
       })
-      .then(response => response.json())
-      .then(data => {
-        if (data.result === "success") {
-          document.getElementById("status").innerText = "✅ Successfully submitted!";
-        } else {
-          document.getElementById("status").innerText = "❌ Error: " + data.error;
-        }
+      .then(res => res.text())
+      .then(() => {
+        document.getElementById("status").textContent = "✅ Submitted successfully!";
+        document.getElementById("barcode").value = "";
+        document.getElementById("productName").value = "";
+        document.getElementById("quantity").value = "";
       })
-      .catch(error => {
-        document.getElementById("status").innerText = "⚠️ Network error: " + error;
+      .catch(err => {
+        document.getElementById("status").style.color = "red";
+        document.getElementById("status").textContent = "❌ Failed to submit.";
       });
-
-      // Optional: clear input fields
-      document.getElementById("barcode").value = "";
-      document.getElementById("productName").value = "";
-      document.getElementById("quantity").value = "";
     }
   </script>
 </body>
