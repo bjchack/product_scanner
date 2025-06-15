@@ -5,70 +5,22 @@
   <title>Product Scanner</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-  <style>
-    body { font-family: Arial, sans-serif; background: #f9f9f9; text-align: center; padding: 20px; }
-    input, button {
-      margin: 10px; padding: 12px; width: 90%; max-width: 300px;
-      font-size: 16px; border-radius: 6px; border: 1px solid #ccc;
-    }
-    button { background: #28a745; color: white; border: none; cursor: pointer; }
-    #reader { width: 300px; margin: auto; display: none; }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
-<body>
-  <h2>📦 Product Scanner</h2>
-  <input type="text" id="barcode" placeholder="Scanned Barcode" readonly>
-  <button onclick="startScan()">📷 Scan Barcode</button>
-  <div id="reader"></div>
+<body onload="checkLogin()">
+  <div class="container">
+    <h2>📦 Product Scanner</h2>
+    <input type="text" id="barcode" placeholder="Scanned Barcode" readonly>
+    <button onclick="startScan()">📷 Scan Barcode</button>
+    <div id="reader"></div>
 
-  <input type="text" id="productName" placeholder="Product Name">
-  <input type="number" id="quantity" placeholder="Quantity">
-  <button onclick="submitData()">✅ Submit</button>
+    <input type="text" id="productName" placeholder="Product Name">
+    <input type="number" id="quantity" placeholder="Quantity">
+    <button onclick="submitData()">✅ Submit</button>
+    <button onclick="logout()" class="logout">Logout</button>
 
-  <p id="status" style="color: green;"></p>
-
-  <script>
-    function startScan() {
-      document.getElementById("reader").style.display = "block";
-      const scanner = new Html5Qrcode("reader");
-      scanner.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: 250 },
-        (decodedText) => {
-          document.getElementById("barcode").value = decodedText;
-          scanner.stop();
-          document.getElementById("reader").style.display = "none";
-        },
-        (error) => {}
-      ).catch((err) => alert("Camera error: " + err));
-    }
-
-    function submitData() {
-      const barcode = encodeURIComponent(document.getElementById("barcode").value.trim());
-      const product = encodeURIComponent(document.getElementById("productName").value.trim());
-      const quantity = encodeURIComponent(document.getElementById("quantity").value.trim());
-
-      if (!barcode || !product || !quantity) {
-        alert("❗ Please complete all fields.");
-        return;
-      }
-
-      const formURL = "https://docs.google.com/forms/d/e/1FAIpQLSc7L0-8TQxpw0EL3BEDufG5YOesOOO1Y1VtYeHWxu3zaIqnwQ/formResponse?";
-      const fullURL = `${formURL}entry.1329060812=${barcode}&entry.10487006=${product}&entry.1024576307=${quantity}`;
-
-      fetch(fullURL, { method: "POST", mode: "no-cors" })
-        .then(() => {
-          document.getElementById("status").textContent = "✅ Submitted successfully!";
-          document.getElementById("status").style.color = "green";
-          document.getElementById("barcode").value = "";
-          document.getElementById("productName").value = "";
-          document.getElementById("quantity").value = "";
-        })
-        .catch(() => {
-          document.getElementById("status").textContent = "❌ Failed to submit.";
-          document.getElementById("status").style.color = "red";
-        });
-    }
-  </script>
+    <p id="status"></p>
+  </div>
+  <script src="script.js"></script>
 </body>
 </html>
