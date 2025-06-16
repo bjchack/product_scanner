@@ -1,153 +1,107 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>BJC Inventory</title>
-  <style>
-    body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; }
-    h1 { text-align: center; color: #333; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1);}
-    th, td { padding: 12px; border-bottom: 1px solid #ddd; text-align: center; }
-    th { background-color: #007bff; color: white; }
-    tr:hover { background-color: #f1f1f1; }
-    button { padding: 5px 10px; border: none; border-radius: 5px; cursor: pointer; }
-    .del-btn { background: #dc3545; color: white; }
-    .edit-btn { background: #ffc107; color: black; }
-    #muteBtn { position: fixed; top: 20px; right: 20px; background: none; border: none; font-size: 28px; cursor: pointer; }
-  </style>
-</head>
+<head>…</head>
 <body>
-
-<button id="muteBtn" onclick="toggleMute(this)">🔊</button>
-<h1>BJC Inventory List</h1>
-<div style="text-align:center; margin: 10px 0;">
-  <button onclick="exportJSON()">📥 Export Inventory JSON</button>
-  <button onclick="document.getElementById('jsonFile').click()">📂 Import JSON</button>
-  <input type="file" id="jsonFile" accept=".json" style="display: none;" onchange="importJSON(event)">
-</div>
-
-<table>
-  <thead>
-    <tr>
-      <th>Barcode</th>
-      <th>Name</th>
-      <th>Price</th>
-      <th>Quantity</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
-  <tbody id="product-table">
-    <!-- Products will load here -->
-  </tbody>
-</table>
-
+  <!-- same layout -->
 <script>
-  // 🔈 SOUND SUPPORT
-  const successSnd = new Audio('sounds/success.mp3');
-  const errorSnd = new Audio('sounds/error.mp3');
-  let isMuted = false;
+// 🔈 SOUND SUPPORT (same)
+let isMuted = false;
+function playSuccess(){ if(!isMuted) new Audio('sounds/success.mp3').play(); }
+function playError(){ if(!isMuted) new Audio('sounds/error.mp3').play(); }
+function toggleMute(btn){ isMuted=!isMuted; btn.textContent = isMuted?'🔇':'🔊'; }
 
-  function playSuccess() { if (!isMuted) successSnd.cloneNode().play(); }
-  function playError()   { if (!isMuted) errorSnd.cloneNode().play(); }
-  function toggleMute(btn) {
-    isMuted = !isMuted;
-    btn.textContent = isMuted ? '🔇' : '🔊';
-  }
-
-  // 📦 LOAD PRODUCTS
-  function loadProducts() {
-    fetch('data/products.json')
-      .then(res => {
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        return res.json();
-      })
-      .then(json => {
-        localStorage.setItem('products', JSON.stringify(json));
-        renderTable(json);
-      })
-      .catch(err => {
-        console.warn('⚠️ Fetch failed, using localStorage.', err);
-        const db = JSON.parse(localStorage.getItem('products') || '{}');
-        renderTable(db);
-      });
-  }
-
-  function renderTable(db) {
-    const table = document.getElementById('product-table');
-    table.innerHTML = '';
-    for (const [barcode, product] of Object.entries(db)) {
-      const qty = product.qty ?? 0;
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td>${barcode}</td>
-        <td>${product.name}</td>
-        <td>₱${parseFloat(product.price).toFixed(2)}</td>
-        <td>${qty}</td>
-        <td>
-          <button class="edit-btn" onclick="editProduct('${barcode}')">✏️</button>
-          <button class="del-btn" onclick="deleteProduct('${barcode}')">🗑️</button>
-        </td>`;
-      table.appendChild(row);
-    }
-  }
-
-  function deleteProduct(barcode) {
-    if (!confirm('❌ Delete this product?')) return;
-    const db = JSON.parse(localStorage.getItem('products') || '{}');
-    delete db[barcode];
-    localStorage.setItem('products', JSON.stringify(db));
-    playSuccess();
-    loadProducts();
-  }
-
-  function editProduct(barcode) {
-    const db = JSON.parse(localStorage.getItem('products') || '{}');
-    const product = db[barcode];
-    const newName = prompt('Edit name:', product.name);
-    const newPrice = parseFloat(prompt('Edit price:', product.price));
-    const newQty = parseInt(prompt('Edit quantity:', product.qty ?? 0));
-
-    if (newName && !isNaN(newPrice) && !isNaN(newQty)) {
-      db[barcode] = { ...product, name: newName, price: newPrice, qty: newQty };
-      localStorage.setItem('products', JSON.stringify(db));
-      playSuccess();
-      loadProducts();
-    } else {
+// Fetch from JSON
+let db = {};
+function loadProducts(){
+  fetch('data/products.json')
+    .then(r=>r.json())
+    .then(json=>{
+      db = json;
+      renderTable();
+    })
+    .catch(err=>{
       playError();
-      alert('⚠️ Invalid input.');
+      alert('❌ Error loading products.json');
+      console.error(err);
+    });
+}
+
+function renderTable(){
+  const table = document.getElementById('product-table');
+  table.innerHTML = '';
+  for(const [barcode, p] of Object.entries(db)){
+    const qty = p.qty || 0;
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${barcode}</td>
+      <td>${p.name}</td>
+      <td>₱${parseFloat(p.price).toFixed(2)}</td>
+      <td>${qty}</td>
+      <td>
+        <button class="edit-btn" onclick="editProduct('${barcode}')">✏️</button>
+        <button class="del-btn" onclick="deleteProduct('${barcode}')">🗑️</button>
+      </td>`;
+    table.appendChild(row);
+  }
+}
+
+// Edit and delete must update JSON separately – localStorage no longer used
+function editProduct(barcode){
+  const p = db[barcode];
+  const n = prompt('Edit name:', p.name);
+  const pr = parseFloat(prompt('Edit price:', p.price));
+  const q = parseInt(prompt('Edit qty:', p.qty));
+  if(n && !isNaN(pr) && !isNaN(q)){
+    db[barcode]={name:n,price:pr,qty:q};
+    playSuccess();
+    renderTable();
+    saveToLocal();
+  } else {
+    playError();
+    alert('⚠️ Invalid input');
+  }
+}
+
+function deleteProduct(barcode){
+  if(!confirm('❌ Delete?'))return;
+  delete db[barcode];
+  playSuccess();
+  renderTable();
+  saveToLocal();
+}
+
+// Export & import can still use JSON files
+function exportJSON(){
+  const blob = new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='products.json';
+  a.click();
+}
+
+function importJSON(e){
+  const file=e.target.files[0];
+  if(!file)return;
+  new FileReader().onload=e=>{
+    try{
+      db=JSON.parse(e.target.result);
+      playSuccess();
+      renderTable();
+      saveToLocal();
+    }catch{
+      playError();
+      alert('❌ Invalid JSON file');
     }
-  }
+  }.readAsText(file);
+}
 
-  function exportJSON() {
-    const db = localStorage.getItem('products');
-    const blob = new Blob([db], { type: 'application/json' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = 'inventory.json';
-    link.click();
-  }
+// Save edited changes locally too if needed
+function saveToLocal(){
+  localStorage.setItem('products', JSON.stringify(db));
+}
 
-  function importJSON(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = e => {
-      try {
-        const json = JSON.parse(e.target.result);
-        localStorage.setItem('products', JSON.stringify(json));
-        playSuccess();
-        loadProducts();
-      } catch {
-        playError();
-        alert('❌ Invalid JSON file');
-      }
-    };
-    reader.readAsText(file);
-  }
-
-  // 🚀 INIT
-  loadProducts();
+// Init
+loadProducts();
 </script>
 </body>
 </html>
