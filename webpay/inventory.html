@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BJC Inventory</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; }
+    h1 { text-align: center; color: #333; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1);}
+    th, td { padding: 12px; border-bottom: 1px solid #ddd; text-align: center; }
+    th { background-color: #007bff; color: white; }
+    tr:hover { background-color: #f1f1f1; }
+    button { padding: 5px 10px; border: none; border-radius: 5px; cursor: pointer; }
+    .del-btn { background: #dc3545; color: white; }
+    .edit-btn { background: #ffc107; color: black; }
+    #muteBtn { position: fixed; top: 20px; right: 20px; background: none; border: none; font-size: 28px; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+<button id="muteBtn" onclick="toggleMute(this)">🔊</button>
+<h1>BJC Inventory List</h1>
+<div style="text-align:center; margin: 10px 0;">
+  <button onclick="exportJSON()">📥 Export Inventory JSON</button>
+  <button onclick="document.getElementById('jsonFile').click()">📂 Import JSON</button>
+  <input type="file" id="jsonFile" accept=".json" style="display: none;" onchange="importJSON(event)">
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Barcode</th>
+      <th>Name</th>
+      <th>Price</th>
+      <th>Quantity</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody id="product-table">
+    <!-- Products will load here -->
+  </tbody>
+</table>
+
+<script>
+  // 🔈 SOUND SUPPORT
+  const successSnd = new Audio('sounds/success.mp3');
+  const errorSnd = new Audio('sounds/error.mp3');
+  let isMuted = false;
+
+  function playSuccess() { if (!isMuted) successSnd.cloneNode().play(); }
+  function playError()   { if (!isMuted) errorSnd.cloneNode().play(); }
+  function toggleMute(btn) {
+    isMuted = !isMuted;
+    btn.textContent = isMuted ? '🔇' : '🔊';
+  }
+
+  // 📦 LOAD PRODUCTS
+  function loadProducts() {
+    const db = JSON.parse(localStorage.getItem('products') || '{}');
+    const table = document.getElementById('product-table');
+    table.innerHTML = ''; // clear
+
+    for (const [barcode, product] of Object.entries(db)) {
+      const qty = product.qty ?? 0; // fix undefined
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${barcode}</td>
+        <td>${product.name}</td>
+        <td>₱${parseFloat(product.price).toFixed(2)}</td>
+        <td>${qty}</td>
+        <td>
+          <button class="edit-btn" onclick="editProduct('${barcode}')">✏️</button>
+          <button class="del-btn" onclick="deleteProduct('${barcode}')">🗑️</button>
+        </td>
+      `;
+      table.appendChild(row);
+    }
+  }
+
+  // 🗑️ DELETE
+  function deleteProduct(barcode) {
+    if (!confirm('❌ Delete this product?')) return;
+    const db = JSON.parse(localStorage.getItem('products') || '{}');
+    delete db[barcode];
+    localStorage.setItem('products', JSON.stringify(db));
+    playSuccess();
+    loadProducts();
+  }
+
+  // ✏️ EDIT
+  function editProduct(barcode) {
+    const db = JSON.parse(localStorage.getItem('products') || '{}');
+    const product = db[barcode];
+    const newName = prompt('Edit name:', product.name);
+    const newPrice = parseFloat(prompt('Edit price:', product.price));
+    const newQty = parseInt(prompt('Edit quantity:', product.qty ?? 0));
+
+    if (newName && !isNaN(newPrice) && !isNaN(newQty)) {
+      db[barcode] = { ...product, name: newName, price: newPrice, qty: newQty };
+      localStorage.setItem('products', JSON.stringify(db));
+      playSuccess();
+      loadProducts();
+    } else {
+      playError();
+      alert('⚠️ Invalid input.');
+    }
+  }
+
+  // 📁 EXPORT JSON
+  function exportJSON() {
+    const db = localStorage.getItem('products');
+    const blob = new Blob([db], { type: 'application/json' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'inventory.json';
+    link.click();
+  }
+
+  // 📥 IMPORT JSON
+  function importJSON(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        const json = JSON.parse(e.target.result);
+        localStorage.setItem('products', JSON.stringify(json));
+        playSuccess();
+        loadProducts();
+      } catch {
+        playError();
+        alert('❌ Invalid JSON file');
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  // 🚀 INIT
+  loadProducts();
+</script>
+</body>
+</html>

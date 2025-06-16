@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>BJC Register</title>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f8f9fa; padding: 20px; }
+    h1 { color: #333; }
+    .section { background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,.1); max-width: 400px; }
+    input, button { width: 100%; padding: 10px; margin: 8px 0; border-radius: 5px; box-sizing: border-box; }
+    button { font-weight: bold; cursor: pointer; border: none; }
+    .blue { background: #17a2b8; color: #fff; }
+    .yellow { background: #ffc107; color: #212529; }
+    #scanner { max-width: 320px; margin: 15px 0 }
+    #muteBtn { position: fixed; top: 20px; right: 20px; background: none; border: none; font-size: 28px; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+<button id="muteBtn" onclick="toggleMute(this)">🔊</button>
+
+<h1>BJC Register</h1>
+<div class="section">
+  <input id="scan-barcode" type="text" placeholder="Scan or Enter Barcode">
+  <button class="blue" onclick="startScan('scan-barcode')">📷 Scan Barcode</button>
+  <div id="scanner" style="display:none;"></div>
+  <input id="scan-name" type="text" placeholder="Enter product name">
+  <input id="scan-qty" type="number" placeholder="Enter Quantity">
+  <button id="torchBtn" class="yellow" style="display:none;" onclick="toggleTorch(this)">💡 Light On</button>
+  <button class="blue" onclick="findProduct()">💾 Save / Update Product</button>
+</div>
+
+<script>
+  const successSnd = new Audio('./sounds/success.mp3');
+  const errorSnd = new Audio('./sounds/error.mp3');
+  let isMuted = false;
+
+  function playSuccess() { if (!isMuted) successSnd.cloneNode().play(); }
+  function playError()   { if (!isMuted) errorSnd.cloneNode().play(); }
+  function toggleMute(btn) {
+    isMuted = !isMuted;
+    btn.textContent = isMuted ? '🔇' : '🔊';
+  }
+
+  let qr = null, torchOn = false;
+  function toggleTorch(btn) {
+    if (!qr) return;
+    torchOn = !torchOn;
+    qr.applyVideoConstraints({ advanced: [{ torch: torchOn }] })
+      .catch(() => alert('⚠️ Torch not supported.'));
+    btn.textContent = torchOn ? '💡 Light Off' : '💡 Light On';
+  }
+
+  function startScan(targetInputId) {
+    const scanDiv = document.getElementById('scanner');
+    scanDiv.style.display = 'block';
+    document.getElementById('torchBtn').style.display = 'inline-block';
+    qr = new Html5Qrcode("scanner");
+    qr.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 },
+      (decodedText) => {
+        document.getElementById(targetInputId).value = decodedText;
+        playSuccess();
+        qr.stop().then(() => {
+          scanDiv.style.display = 'none';
+          torchOn = false;
+          document.getElementById('torchBtn').style.display = 'none';
+        });
+      }, () => {}
+    ).catch(() => { playError(); alert('Camera error'); });
+  }
+
+  function findProduct() {
+    const barcode = document.getElementById('scan-barcode').value.trim();
+    const name = document.getElementById('scan-name').value.trim();
+    const qty = parseInt(document.getElementById('scan-qty').value);
+
+    if (!barcode || !name || isNaN(qty)) {
+      playError();
+      return alert("⚠️ Please enter barcode, name, and quantity.");
+    }
+
+    const db = JSON.parse(localStorage.getItem('products') || '{}');
+    const price = db[barcode]?.price || parseFloat(prompt("Enter price (₱):"));
+
+    if (isNaN(price)) {
+      playError();
+      return alert("⚠️ Invalid price.");
+    }
+
+    db[barcode] = {
+      name,
+      price,
+      qty
+    };
+
+    localStorage.setItem('products', JSON.stringify(db));
+    alert("✅ Product saved!");
+    playSuccess();
+
+    document.getElementById('scan-barcode').value = '';
+    document.getElementById('scan-name').value = '';
+    document.getElementById('scan-qty').value = '';
+  }
+</script>
+</body>
+</html>

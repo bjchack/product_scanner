@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>BJC POS</title>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f8f9fa; padding: 20px }
+    .section { background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,.1); max-width: 400px; margin-bottom: 30px }
+    input, button { width: 100%; padding: 10px; margin-top: 10px; border-radius: 5px; box-sizing: border-box }
+    button { border: none; font-weight: bold; cursor: pointer }
+    .green { background: #28a745; color: #fff }
+    .blue { background: #17a2b8; color: #fff }
+    .yellow { background: #ffc107; color: #212529 }
+    #scanner { max-width: 320px; margin: 15px 0 }
+    #print-status { font-size: 12px; text-align: center; margin-top: 10px; color: #333 }
+    ul { padding: 0; list-style: none }
+    li { margin-bottom: 5px; background: #eee; padding: 8px; border-radius: 5px }
+  </style>
+</head>
+<body>
+
+<h1>BJC POS Scanner</h1>
+<div class="section">
+  <input id="scan-barcode" type="text" placeholder="Scan or Enter Barcode">
+  <button class="blue" onclick="startScan()">📷 Scan Barcode</button>
+  <div id="scanner" style="display:none;"></div>
+  <input id="scan-name" type="text" placeholder="Or enter product name">
+  <input id="scan-qty" type="number" placeholder="Enter Quantity">
+  <button class="green" onclick="findProduct()">🔍 Find Product</button>
+
+  <div id="product-info" style="display:none;">
+    <p><strong>Name:</strong> <span id="prod-name"></span></p>
+    <p><strong>Price:</strong> ₱<span id="prod-price"></span></p>
+    <button class="green" onclick="addToCart()">🛒 Add to Cart</button>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Cart</h3>
+  <ul id="cart-list"></ul>
+  <h2>Total: ₱<span id="total">0</span></h2>
+  <button class="green" onclick="processPayment()">💰 Paid</button>
+  <button class="blue" onclick="printReceipt()">🖨️ Print Receipt</button>
+  <div id="print-status"></div>
+</div>
+
+<script>
+const successSnd = new Audio('./sounds/success.mp3');
+const errorSnd = new Audio('./sounds/error.mp3');
+function playSuccess() { try { successSnd.cloneNode(true).play(); } catch {} }
+function playError() { try { errorSnd.cloneNode(true).play(); } catch {} }
+
+let cart = [];
+
+function startScan() {
+  const scanner = document.getElementById("scanner");
+  scanner.style.display = "block";
+  const html5QrCode = new Html5Qrcode("scanner");
+
+  Html5Qrcode.getCameras().then(devices => {
+    if (devices && devices.length) {
+      const backCam = devices.find(d => d.label.toLowerCase().includes('back')) || devices[1] || devices[0];
+      const cameraId = backCam.id;
+
+      html5QrCode.start(cameraId, { fps: 10, qrbox: 250 },
+        qrCodeMessage => {
+          document.getElementById("scan-barcode").value = qrCodeMessage;
+          html5QrCode.stop();
+          scanner.style.display = "none";
+          findProduct();
+        },
+        errorMessage => {} // ignore
+      );
+    } else {
+      alert("❌ No camera found.");
+    }
+  }).catch(err => {
+    alert("📷 Error accessing camera.");
+    console.error(err);
+  });
+}
+
+function findProduct() {
+  const code = document.getElementById('scan-barcode').value.trim();
+  const name = document.getElementById('scan-name').value.trim().toLowerCase();
+  const db = JSON.parse(localStorage.getItem('products') || '{}');
+  let p = null;
+
+  if (code && db[code]) p = db[code];
+  else if (name) {
+    for (const key in db) {
+      if (db[key].name.toLowerCase().includes(name)) {
+        p = db[key]; document.getElementById('scan-barcode').value = key; break;
+      }
+    }
+  }
+
+  if (p) {
+    playSuccess();
+    document.getElementById('product-info').style.display = 'block';
+    document.getElementById('prod-name').textContent = p.name;
+    document.getElementById('prod-price').textContent = p.price;
+  } else {
+    playError();
+    alert('❌ Product not found');
+    document.getElementById('product-info').style.display = 'none';
+  }
+}
+
+function addToCart() {
+  const code = document.getElementById('scan-barcode').value.trim();
+  const qty = parseInt(document.getElementById('scan-qty').value);
+  const db = JSON.parse(localStorage.getItem('products') || '{}');
+  const p = db[code];
+
+  if (!p || isNaN(qty) || qty <= 0) {
+    playError(); return alert('⚠️ Invalid quantity');
+  }
+
+  if (parseInt(p.qty || 0) <= 0) {
+    playError(); return alert(`❌ "${p.name}" is out of stock.`);
+  }
+
+  if (qty > parseInt(p.qty || 0)) {
+    playError(); return alert(`❌ Not enough stock for "${p.name}". Only ${p.qty} left.`);
+  }
+
+  cart.push({ code, name: p.name, price: p.price, qty, subtotal: p.price * qty });
+  document.getElementById('product-info').style.display = 'none';
+  document.getElementById('scan-barcode').value = '';
+  document.getElementById('scan-name').value = '';
+  document.getElementById('scan-qty').value = '';
+  playSuccess();
+  updateCartUI();
+}
+
+function updateCartUI() {
+  const list = document.getElementById('cart-list'); list.innerHTML = '';
+  let total = 0;
+  cart.forEach(i => {
+    const li = document.createElement('li');
+    li.textContent = `${i.name} x${i.qty} = ₱${i.subtotal.toFixed(2)}`;
+    list.appendChild(li);
+    total += i.subtotal;
+  });
+  document.getElementById('total').textContent = total.toFixed(2);
+}
+
+function processPayment() {
+  if (cart.length === 0) return alert('🛒 Cart is empty!');
+  const db = JSON.parse(localStorage.getItem('products') || '{}');
+  let insufficient = [];
+
+  cart.forEach(item => {
+    const p = db[item.code];
+    const remaining = parseInt(p.qty || 0) - item.qty;
+    if (remaining < 0) insufficient.push(`${item.name} (Only ${p.qty})`);
+  });
+
+  if (insufficient.length > 0) {
+    playError();
+    document.getElementById('print-status').textContent = '❌ Error: Not enough stock.';
+    return alert('❌ Not enough stock for:\n' + insufficient.join('\n'));
+  }
+
+  cart.forEach(item => {
+    const p = db[item.code];
+    p.qty = parseInt(p.qty || 0) - item.qty;
+
+    // ✅ Log to Google Form
+    const url = `https://docs.google.com/forms/d/e/1FAIpQLSex-a-vYbexWhKRnGIE8_0tlxTPcOIAaY_7dyFG9uLwEQm1FA/formResponse` +
+      `?entry.232165772=${item.code}` +
+      `&entry.748296410=${encodeURIComponent(item.name)}` +
+      `&entry.1708986917=${item.price}` +
+      `&entry.1127580982=${item.qty}`;
+    fetch(url, { method: "POST", mode: "no-cors" });
+  });
+
+  localStorage.setItem('products', JSON.stringify(db));
+  cart = []; updateCartUI();
+  playSuccess();
+  document.getElementById('print-status').textContent = '✅ Payment complete. Thank you!';
+}
+
+function printReceipt() {
+  if (cart.length === 0) {
+    document.getElementById('print-status').textContent = '🛑 Cart empty. Nothing to print.';
+    playError(); return;
+  }
+
+  try {
+    const cashier = localStorage.getItem("cashier") || "Cashier";
+    const now = new Date().toLocaleString();
+    let receipt = `🧾 ${cashier} - ${now}\n--------------------\n`;
+    let total = 0;
+    cart.forEach(i => {
+      receipt += `${i.name} x${i.qty} = ₱${i.subtotal.toFixed(2)}\n`;
+      total += i.subtotal;
+    });
+    receipt += `--------------------\nTotal: ₱${total.toFixed(2)}\nThank you!\n`;
+
+    console.log(receipt);
+    document.getElementById('print-status').textContent = '🖨️ Receipt sent to Bluetooth printer.';
+    playSuccess();
+  } catch {
+    document.getElementById('print-status').textContent = '⚠️ No printer connected.';
+    playError();
+  }
+}
+</script>
+</body>
+</html>

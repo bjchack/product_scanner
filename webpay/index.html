@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CMAR PRODUCT</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; }
+    body {
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      animation: fadeIn 2s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-50px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .container {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.3);
+      text-align: center;
+      width: 300px;
+    }
+    .logo {
+      width: 100px;
+      height: 100px;
+      margin-bottom: 15px;
+    }
+    h1 {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+    input[type="password"] {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: none;
+      border-radius: 5px;
+      text-align: center;
+    }
+    button {
+      background-color: #00b894;
+      color: white;
+      border: none;
+      padding: 10px;
+      margin: 5px 0;
+      width: 100%;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background-color: #019875;
+    }
+    .menu {
+      display: none;
+      animation: fadeIn 1s ease forwards;
+    }
+    .logout-btn {
+      background: #d63031;
+    }
+    .logout-btn:hover {
+      background: #c0392b;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <img src="https://bjchack.github.io/product_scanner/logo.png" alt="Logo" class="logo">
+    <h1>CMAR PRODUCT</h1>
+
+    <div id="login">
+      <input type="password" id="password" placeholder="Enter admin password">
+      <button onclick="checkLogin()">Login</button>
+    </div>
+
+    <div class="menu" id="menu">
+      <button onclick="location.href='./register.html'">📝 Register Product</button>
+      <button onclick="location.href='./sale.html'">🛒 Sale Product</button>
+      <button onclick="location.href='./inventory.html'">📦 Inventory</button>
+      <button onclick="location.href='./about.html'">ℹ️ About</button>
+      <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+    </div>
+  </div>
+
+  <script>
+    // Check if already logged in
+    if (localStorage.getItem('cmar_logged_in') === 'true') {
+      document.getElementById('login').style.display = 'none';
+      document.getElementById('menu').style.display = 'block';
+    }
+
+    function checkLogin() {
+      const input = document.getElementById('password').value;
+      if(input === 'admin123') {
+        localStorage.setItem('cmar_logged_in', 'true');
+        document.getElementById('login').style.display = 'none';
+        document.getElementById('menu').style.display = 'block';
+      } else {
+        alert('❌ Incorrect password!');
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem('cmar_logged_in');
+      location.reload(); // refresh back to login
+    }
+  </script>
+</body>
+</html>
