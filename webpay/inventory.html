@@ -57,10 +57,25 @@
 
   // 📦 LOAD PRODUCTS
   function loadProducts() {
-    const db = JSON.parse(localStorage.getItem('products') || '{}');
-    const table = document.getElementById('product-table');
-    table.innerHTML = ''; // clear
+    fetch('data/products.json')
+      .then(res => {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      })
+      .then(json => {
+        localStorage.setItem('products', JSON.stringify(json));
+        renderTable(json);
+      })
+      .catch(err => {
+        console.warn('⚠️ Fetch failed, using localStorage.', err);
+        const db = JSON.parse(localStorage.getItem('products') || '{}');
+        renderTable(db);
+      });
+  }
 
+  function renderTable(db) {
+    const table = document.getElementById('product-table');
+    table.innerHTML = '';
     for (const [barcode, product] of Object.entries(db)) {
       const qty = product.qty ?? 0;
       const row = document.createElement('tr');
@@ -72,13 +87,11 @@
         <td>
           <button class="edit-btn" onclick="editProduct('${barcode}')">✏️</button>
           <button class="del-btn" onclick="deleteProduct('${barcode}')">🗑️</button>
-        </td>
-      `;
+        </td>`;
       table.appendChild(row);
     }
   }
 
-  // 🗑️ DELETE
   function deleteProduct(barcode) {
     if (!confirm('❌ Delete this product?')) return;
     const db = JSON.parse(localStorage.getItem('products') || '{}');
@@ -88,7 +101,6 @@
     loadProducts();
   }
 
-  // ✏️ EDIT
   function editProduct(barcode) {
     const db = JSON.parse(localStorage.getItem('products') || '{}');
     const product = db[barcode];
@@ -107,7 +119,6 @@
     }
   }
 
-  // 📁 EXPORT JSON
   function exportJSON() {
     const db = localStorage.getItem('products');
     const blob = new Blob([db], { type: 'application/json' });
@@ -117,7 +128,6 @@
     link.click();
   }
 
-  // 📥 IMPORT JSON
   function importJSON(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -136,17 +146,8 @@
     reader.readAsText(file);
   }
 
-  // 🚀 INIT (load from products.json)
-  fetch("data/products.json")
-    .then(res => res.json())
-    .then(json => {
-      localStorage.setItem("products", JSON.stringify(json));
-      loadProducts();
-    })
-    .catch(err => {
-      console.warn("⚠️ Failed to load products.json, using localStorage instead.");
-      loadProducts();
-    });
+  // 🚀 INIT
+  loadProducts();
 </script>
 </body>
 </html>
