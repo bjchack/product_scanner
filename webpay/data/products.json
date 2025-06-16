@@ -1,0 +1,22 @@
+{
+  "123456": {
+    "name": "Red Horse Grande",
+    "price": 100,
+    "qty": 20
+  },
+  "789101": {
+    "name": "Emperador Lights",
+    "price": 90,
+    "qty": 15
+  },
+  "456789": {
+    "name": "San Mig Apple",
+    "price": 75,
+    "qty": 30
+  },
+  "987654": {
+    "name": "Tanduay Rhum",
+    "price": 85,
+    "qty": 10
+  }
+}
