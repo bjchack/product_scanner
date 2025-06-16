@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BJC POS</title>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background-color: #f8f9fa;
+    }
+    h1, h3 {
+      color: #333;
+    }
+    .section {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+      max-width: 400px;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      box-sizing: border-box;
+    }
+    button {
+      padding: 10px 15px;
+      border: none;
+      background-color: #28a745;
+      color: white;
+      font-weight: bold;
+      border-radius: 5px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 10px;
+    }
+    button:hover {
+      background-color: #218838;
+    }
+    #scanner {
+      width: 100%;
+      max-width: 300px;
+      margin: 15px 0;
+    }
+    ul {
+      list-style-type: none;
+      padding-left: 0;
+    }
+    li {
+      background: #e9ecef;
+      padding: 8px;
+      border-radius: 5px;
+      margin-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>BJC POS Scanner</h1>
+  <div class="section">
+    <input type="text" id="scan-barcode" placeholder="Scan or Enter Barcode" />
+    <button onclick="startScan('scan-barcode')">📷 Scan Barcode</button>
+    <div id="scanner" style="display:none;"></div>
+
+    <button onclick="findProduct()">🔍 Find Product</button>
+
+    <div id="product-info" style="display:none;">
+      <p><strong>Name:</strong> <span id="prod-name"></span></p>
+      <p><strong>Price:</strong> ₱<span id="prod-price"></span></p>
+      <input type="number" id="scan-qty" placeholder="Enter Quantity" />
+      <button onclick="addToCart()">🛒 Add to Cart</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <h3>Cart</h3>
+    <ul id="cart-list"></ul>
+    <h2>Total: ₱<span id="total">0</span></h2>
+  </div>
+
+  <script>
+    let cart = [];
+
+    function findProduct() {
+      const barcode = document.getElementById('scan-barcode').value.trim();
+      const products = JSON.parse(localStorage.getItem('products') || '{}');
+      const product = products[barcode];
+
+      if (product) {
+        document.getElementById('product-info').style.display = 'block';
+        document.getElementById('prod-name').textContent = product.name;
+        document.getElementById('prod-price').textContent = product.price;
+      } else {
+        alert("❌ Product not found.");
+        document.getElementById('product-info').style.display = 'none';
+      }
+    }
+
+    function addToCart() {
+      const barcode = document.getElementById('scan-barcode').value.trim();
+      const qty = parseInt(document.getElementById('scan-qty').value);
+      const products = JSON.parse(localStorage.getItem('products') || '{}');
+      const product = products[barcode];
+      if (!product || isNaN(qty) || qty <= 0) return alert("⚠️ Invalid quantity.");
+
+      const subtotal = product.price * qty;
+      cart.push({ name: product.name, price: product.price, qty, subtotal });
+      updateCartUI();
+    }
+
+    function updateCartUI() {
+      const cartList = document.getElementById('cart-list');
+      const totalDisplay = document.getElementById('total');
+      cartList.innerHTML = '';
+      let total = 0;
+      cart.forEach(item => {
+        const li = document.createElement('li');
+        li.textContent = `${item.name} x${item.qty} = ₱${item.subtotal.toFixed(2)}`;
+        cartList.appendChild(li);
+        total += item.subtotal;
+      });
+      totalDisplay.textContent = total.toFixed(2);
+    }
+
+    function startScan(inputId) {
+      const scanner = document.getElementById('scanner');
+      scanner.style.display = 'block';
+      const html5QrCode = new Html5Qrcode("scanner");
+      html5QrCode.start({ facingMode: "environment" }, {
+        fps: 10,
+        qrbox: 250
+      }, (decodedText) => {
+        document.getElementById(inputId).value = decodedText;
+        html5QrCode.stop().then(() => scanner.style.display = 'none');
+      }, (error) => {
+        // ignore
+      });
+    }
+  </script>
+</body>
+</html>
