@@ -62,7 +62,7 @@
     table.innerHTML = ''; // clear
 
     for (const [barcode, product] of Object.entries(db)) {
-      const qty = product.qty ?? 0; // fix undefined
+      const qty = product.qty ?? 0;
       const row = document.createElement('tr');
       row.innerHTML = `
         <td>${barcode}</td>
@@ -136,8 +136,17 @@
     reader.readAsText(file);
   }
 
-  // 🚀 INIT
-  loadProducts();
+  // 🚀 INIT (load from products.json)
+  fetch("data/products.json")
+    .then(res => res.json())
+    .then(json => {
+      localStorage.setItem("products", JSON.stringify(json));
+      loadProducts();
+    })
+    .catch(err => {
+      console.warn("⚠️ Failed to load products.json, using localStorage instead.");
+      loadProducts();
+    });
 </script>
 </body>
 </html>
