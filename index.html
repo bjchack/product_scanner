@@ -1,10 +1,53 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>Redirecting to License</title>
-    <meta http-equiv="refresh" content="0; url=https://onlypro.free.nf/ZltBands/" />
-  </head>
-  <body>
-    <p>Redirecting to license verification...</p>
-  </body>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Product Scanner</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+</head>
+<body>
+  <div class="container" id="login-form">
+    <h2>🔐 Secure Login</h2>
+    <input type="password" id="passwordInput" placeholder="Enter Password" />
+    <button onclick="login()">🔓 Login</button>
+
+    <div style="margin-top: 20px;">
+      <a href="https://facebook.com/yourprofile" target="_blank">📘 Facebook</a><br/>
+      <small>© 2025 Product Scanner</small>
+    </div>
+  </div>
+
+  <div class="container" id="scanner-section" style="display: none;">
+    <button id="logout-btn" onclick="logout()">Logout</button>
+    <h2>📦 Product Scanner</h2>
+
+    <div class="input-group">
+      <input type="text" id="barcode" placeholder="Scanned or Manual Barcode" />
+      <button onclick="startScan()">📷 Scan Barcode</button>
+    </div>
+
+    <div id="reader"></div>
+
+    <input type="text" id="productName" placeholder="Product Name" />
+    <input type="number" id="quantity" placeholder="Quantity" />
+    <input type="number" id="price" placeholder="Price" />
+
+    <button onclick="submitData()">✅ Submit</button>
+    <p id="status"></p>
+
+    <button onclick="toggleMute()" id="muteBtn">🔊 Sound ON</button>
+
+    <audio id="success-sound" src="./sounds/success.mp3"></audio>
+    <audio id="error-sound" src="./sounds/error.mp3"></audio>
+
+    <div style="margin-top: 20px;">
+      <a href="https://facebook.com/yourprofile" target="_blank">📘 Facebook</a><br/>
+      <small>© 2025 Product Scanner</small>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
 </html>
